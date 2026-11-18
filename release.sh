@@ -20,9 +20,10 @@ git -C "$SRC" diff --quiet HEAD || { echo "Uncommitted changes in source - commi
 [ ! -e "$ZIP" ] || { echo "Version $VERSION already exists"; exit 1; }
 echo "Source: $(git -C "$SRC" rev-parse --abbrev-ref HEAD) @ $(git -C "$SRC" rev-parse --short HEAD)"
 
-step "2. Copy source (without git, tests, docs)"
-rsync -a --exclude .git --exclude .github --exclude tests --exclude README.md \
-  --exclude .gitignore --exclude release.sh "$SRC/" "$BUILD/$NEW_ID/"
+step "2. Export committed files only (git archive HEAD: no .DS_Store, __pycache__ or other untracked files)"
+mkdir -p "$BUILD/$NEW_ID"
+git -C "$SRC" archive --format=tar HEAD | tar -x -C "$BUILD/$NEW_ID"
+(cd "$BUILD/$NEW_ID" && rm -rf .github tests README.md .gitignore release.sh)   # temporary build copy only
 
 step "3. Rename $OLD_ID -> $NEW_ID (GitHub links kept)"
 grep -rlIF "$OLD_ID" "$BUILD/$NEW_ID" | OLD="$OLD_ID" NEW="$NEW_ID" KEEP="$KEEP" \
