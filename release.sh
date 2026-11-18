@@ -27,8 +27,13 @@ rsync -a --exclude .git --exclude .github --exclude tests --exclude README.md \
 step "3. Rename $OLD_ID -> $NEW_ID (GitHub links kept)"
 grep -rlIF "$OLD_ID" "$BUILD/$NEW_ID" | OLD="$OLD_ID" NEW="$NEW_ID" KEEP="$KEEP" \
   xargs perl -pi -e 's/(?<!\Q$ENV{KEEP}\E)\Q$ENV{OLD}\E/$ENV{NEW}/g'
-echo "Old id still present (should only be GitHub links):"
-grep -rnF "$OLD_ID" "$BUILD/$NEW_ID" | grep -vF "$NEW_ID" || echo "  (none)"
+# Search from inside the build dir: the full path itself contains $NEW_ID and would hide every hit.
+LEFT="$(cd "$BUILD/$NEW_ID" && grep -rlIF "$OLD_ID" . | OLD="$OLD_ID" NEW="$NEW_ID" KEEP="$KEEP" \
+  xargs perl -ne '$l = $_; $l =~ s/\Q$ENV{NEW}\E//g; $l =~ s/\Q$ENV{KEEP}$ENV{OLD}\E//g;
+    print "  $ARGV:$.: $_" if index($l, $ENV{OLD}) >= 0; close ARGV if eof')" || true
+echo "GitHub links kept: $(cd "$BUILD/$NEW_ID" && grep -rIF "$KEEP$OLD_ID" . | wc -l | tr -d ' ')"
+if [ -n "$LEFT" ]; then echo "Old id left outside GitHub links:"; echo "$LEFT"; exit 1; fi
+echo "Old id left outside GitHub links: (none)"
 
 step "4. Set name and version in addon.xml"
 NAME="$NEW_NAME" VER="$VERSION" perl -0pi -e \
