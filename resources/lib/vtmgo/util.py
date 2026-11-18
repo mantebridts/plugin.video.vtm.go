@@ -17,12 +17,13 @@ _LOGGER = logging.getLogger(__name__)
 # Setup a static session that can be reused for all calls
 SESSION = requests.Session()
 SESSION.headers = {
-'Accept': 'application/json;image/webp',
-'Accept-Encoding': 'gzip',
-'User-Agent': 'VTM_GO/28.260923 (be.vmma.vtm.zenderapp; build:37208; Android TV 28) okhttp/4.12.0',
-'x-app-version': '28',
-'lfvp-device-segment': 'TV>Android',
+    'Accept': 'application/json;image/webp',
+    'Accept-Encoding': 'gzip',
+    'User-Agent': 'VTM_GO/28.260923 (be.vmma.vtm.zenderapp; build:37208; Android TV 28) okhttp/4.12.0',
+    'x-app-version': '28',
+    'lfvp-device-segment': 'TV>Android',
 }
+
 PROXIES = kodiutils.get_proxies()
 
 
@@ -166,7 +167,7 @@ def _request(method, url, params=None, form=None, data=None, token=None, profile
 
     if token:
         headers['Authorization'] = 'Bearer ' + token
-        
+
     if profile:
         headers['x-dpp-profile'] = profile
 

@@ -113,9 +113,9 @@ class VtmGoAuth:
                 'client_id': 'vtm-go-androidtv',
                 'grant_type': 'urn:ietf:params:oauth:grant-type:device_code',
             }, headers={
-            'Accept': 'application/json',
-            'Accept-Encoding': 'gzip',
-            'User-Agent': 'okhttp/4.12.0'
+                'Accept': 'application/json',
+                'Accept-Encoding': 'gzip',
+                'User-Agent': 'okhttp/4.12.0'
             })
         except HTTPError as exc:
             if exc.response.status_code == 400:
@@ -124,12 +124,12 @@ class VtmGoAuth:
 
         # Store these tokens
         auth_info = json.loads(response.text)
-        self._account.access_token = auth_info.get('access_token')  
-        self._account.id_token = auth_info.get('id_token')  
+        self._account.access_token = auth_info.get('access_token')
+        self._account.id_token = auth_info.get('id_token')
         self._account.refresh_token = auth_info.get('refresh_token')
         self._save_cache()
-        
-        # Validate 
+
+        # Validate
         response = util.http_post(API_ENDPOINT + '/VTM_GO/id-token', data={
             'idToken' : self._account.id_token
         })
