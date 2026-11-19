@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 
+import base64
 import json
 import logging
 import os
@@ -13,13 +14,19 @@ from requests import HTTPError
 from resources.lib.vtmgo import API_ENDPOINT, Profile, util
 from resources.lib.vtmgo.exceptions import NoLoginException
 
-try:  # Python 3
-    import jwt
-except ImportError:  # Python 2
-    # The package is named pyjwt in Kodi 18: https://github.com/lottaboost/script.module.pyjwt/pull/1
-    import pyjwt as jwt
-
 _LOGGER = logging.getLogger(__name__)
+
+
+def _jwt_payload(token):
+    """ Return the payload (claims) of a JWT without verifying its signature.
+
+    We only read the expiry time, so a full JWT library is not needed. PyJWT pulls in the
+    system 'cryptography' package on some Linux distributions, which cannot be loaded in
+    Kodi's Python subinterpreters (PyO3 ImportError).
+    """
+    payload = token.split('.')[1]
+    payload += '=' * (-len(payload) % 4)  # restore base64 padding
+    return json.loads(base64.urlsafe_b64decode(payload.encode('ascii')).decode('utf-8'))
 
 
 class AccountStorage:
@@ -41,10 +48,8 @@ class AccountStorage:
             return False
 
         try:
-            # Verify our token to see if it's still valid.
-            decoded_jwt = jwt.decode(self.access_token,
-                                     algorithms=['HS256'],
-                                     options={'verify_signature': False, 'verify_aud': False})
+            # Read our token to see if it's still valid.
+            decoded_jwt = _jwt_payload(self.access_token)
 
             # Check expiration time
             from datetime import datetime

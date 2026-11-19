@@ -6,7 +6,6 @@
         <import addon="script.module.pysocks" version="1.6.8" optional="true"/>
         <import addon="script.module.requests" version="2.22.0"/>
         <import addon="script.module.routing" version="0.2.0"/>
-        <import addon="script.module.pyjwt" version="1.6.4"/>
         <import addon="script.module.inputstreamhelper" version="0.3.4"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="addon_entry.py">
